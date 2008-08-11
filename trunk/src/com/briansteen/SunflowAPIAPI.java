@@ -233,7 +233,6 @@ public class SunflowAPIAPI {
 		sunflow.parameter("maxdist", maxDist);
 
 //		set shader
-		System.out.println("set ambient shader");
 		sunflow.shader(currShader, SHADER_AMBIENT_OCCLUSION);
 	}
 
