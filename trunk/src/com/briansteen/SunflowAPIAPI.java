@@ -154,7 +154,7 @@ public class SunflowAPIAPI {
 	public void setPointLight(String name, Point3 center, Color color) {
 		sunflow.parameter("center", center);
 		sunflow.parameter("power", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
-		sunflow.light( name, LIGHT_IMAGEBASED );
+		sunflow.light( name, this.LIGHT_POINT );
 	}
 	/**
 	 * Sets sphere light
@@ -227,12 +227,13 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255/(float)255, bright.getGreen()/(float)255, bright.getBlue()/(float)255);
-		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255/(float)255, dark.getGreen()/(float)255, dark.getBlue()/(float)255);
+		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255, bright.getGreen()/(float)255, bright.getBlue()/(float)255);
+		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255, dark.getGreen()/(float)255, dark.getBlue()/(float)255);
 		sunflow.parameter("samples", samples);
 		sunflow.parameter("maxdist", maxDist);
 
 //		set shader
+		System.out.println("set ambient shader");
 		sunflow.shader(currShader, SHADER_AMBIENT_OCCLUSION);
 	}
 
@@ -245,7 +246,7 @@ public class SunflowAPIAPI {
 	 * @param maxDist ?
 	 * @param texture Path to texture file
 	 */
-	public void setAmbientOcclusionShader(String name, Color bright, Color dark, int samples, int maxDist, String texture) {
+	public void setAmbientOcclusionShader(String name, Color bright, Color dark, int samples, float maxDist, String texture) {
 //		save name for use with primitives
 		currShader = name;
 
