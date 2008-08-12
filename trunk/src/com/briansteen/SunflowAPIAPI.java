@@ -574,7 +574,6 @@ public class SunflowAPIAPI {
 	 * @param size size
 	 */
 	public void drawSphere(String name, float x, float y, float z, float size) {
-
 		Matrix4 translate = Matrix4.IDENTITY.multiply( Matrix4.translation(x, y, z ));
 		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(size, size, size) );
 
