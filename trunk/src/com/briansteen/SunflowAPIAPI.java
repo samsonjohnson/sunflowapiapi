@@ -850,6 +850,61 @@ public class SunflowAPIAPI {
 	 */
 
 	/*
+     * --------------------------------------------------------------------------------------
+     * MY OWN SHAPES
+     */
+    
+    /**
+     * takes points, uses first point as center and connects the rest to it using triangles
+     * one can draw circles or weird other types of shapes
+     * 
+     * @param name Individual name
+     * @param points a float array of Point3s.
+     */
+    public void drawCircularShape(String name, Point3[] points) {
+//    	 vertex amount
+        int verticesLength = points.length*3;
+        int trianglesLength = points.length-1;
+        float[] vertices = new float[verticesLength];
+        int[] triangles = new int[trianglesLength];
+        
+        // create vertices array
+        int verticesIndex = 0;
+        for(int i=0;i<points.length;i++) {
+            vertices[verticesIndex++] = points[i].x; // x value
+            vertices[verticesIndex++] = points[i].y; // y value
+            vertices[verticesIndex++] = points[i].z; // z value
+        }
+        // create triangles array
+        int trianglesIndex = 0;
+        int runx = 0;
+        for(int i=0;i<trianglesLength;i++) {
+            if(runx == 0) triangles[i] = 0; // center point is always first in vertices array
+            if(runx == 1) triangles[i] = i-2;//i; // point 2
+            if(runx == 2) triangles[i] = i;// i+1; // point 3
+           
+            if(runx == 2) runx = 0;
+            else runx++;
+        }
+        triangles[trianglesIndex++] = 0; // center point is always first in vertices array
+        triangles[trianglesIndex++] = points.length-1; // point 2
+        triangles[trianglesIndex++] = 1; // point 3
+        
+        sunflow.parameter("points", "point", "vertex", vertices); 
+        sunflow.parameter("triangles", triangles);
+
+        sunflow.geometry( name, "triangle_mesh" );
+        sunflow.parameter( "shaders", currShader);
+        if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.instance( name + ".instance", name );
+    }
+    
+    /*
+     * MY OWN SHAPES
+     * --------------------------------------------------------------------------------------
+     */
+	
+	/*
 	 * --------------------------------------------------------------------------------------
 	 * CAMERAS
 	 */
