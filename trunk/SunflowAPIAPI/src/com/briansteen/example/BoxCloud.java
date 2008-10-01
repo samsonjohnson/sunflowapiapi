@@ -63,7 +63,7 @@ public class BoxCloud {
 		sunflow.setIrradianceCacheGIEngine(32, .4f, 1f, 15f, null);
 		
 		// render
-		sunflow.render(true);
+		sunflow.render();
 	}
 	public static void main(String args[]) {
 		BoxCloud main = new BoxCloud();
