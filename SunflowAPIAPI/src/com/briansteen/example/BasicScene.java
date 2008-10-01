@@ -45,7 +45,7 @@ public class BasicScene {
 		sunflow.drawSphere("sphere04", 2, 0, 0, 1);
 		
 		// set shader
-		sunflow.setPhongShader("myPhangShader", new Color(1f,1f,1f), new Color(.5f,.5f,.9f), 10, 16);
+		sunflow.setPhongShader("myPhongShader", new Color(1f,1f,1f), new Color(.5f,.5f,.9f), 10, 16);
 		// draw an object
 		sunflow.drawSphere("sphere05", 4, 0, 0, 1);
 		
