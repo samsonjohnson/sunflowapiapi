@@ -673,6 +673,40 @@ public class SunflowAPIAPI {
 		sunflow.parameter( "transform", m ); 
 		sunflow.instance( name + ".instance", name );
 	}
+	
+	/**
+	 * Draws a box
+	 * @param name
+	 * @param name Individual name
+	 * @param xSize size on x axis
+	 * @param ySize size on y axis
+	 * @param zSize size on z axis
+	 * @param x x position
+	 * @param y y position
+	 * @param z z position 
+	 * @param xRotation x rotation
+	 * @param yRotation y rotation
+	 * @param zRotation z rotation
+	 */
+	public void drawBox(String name, float xSize, float ySize, float zSize, float x, float y, float z, float xRotation, float yRotation, float zRotation) {
+		Matrix4 translate = Matrix4.IDENTITY.multiply( Matrix4.translation(x, y, z ));
+		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(xSize, ySize, zSize) );
+		Matrix4 rotate = Matrix4.IDENTITY 
+		.multiply( Matrix4.rotateZ(zRotation) ) 
+		.multiply( Matrix4.rotateX(xRotation) ) 
+		.multiply( Matrix4.rotateY(yRotation) );
+
+		Matrix4 m = Matrix4.IDENTITY;
+		m = scale.multiply(m);
+		m = rotate.multiply(m); 
+		m = translate.multiply(m);
+
+		sunflow.geometry( name, "box" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.parameter( "transform", m ); 
+		sunflow.instance( name + ".instance", name );
+	}
 
 	/**
 	 * Draws a cylinder
@@ -837,12 +871,12 @@ public class SunflowAPIAPI {
 	 * @param name Individual name
 	 * @param particles float array with particle positions
 	 * @param radius object radius ?
-	 * @param num ?
+	 * @param num Number of Particles
 	 */
 	public void drawParticleSurface(String name, float[] particles, float radius, int num) {
-		sunflow.parameter("points", "point", "vertex", particles);
-		sunflow.parameter("radius", num);
+		sunflow.parameter("particles", "point", "vertex", particles);
 		sunflow.parameter("num", num);
+		sunflow.parameter("radius", radius);
 
 		sunflow.geometry( name, "particles" );
 		sunflow.parameter( "shaders", currShader);
@@ -962,6 +996,32 @@ public class SunflowAPIAPI {
 		up = new Vector3(value0, value1, value2);
 		// update current camera
 		resetCamera();
+	}
+	/**
+	 * set a pinhole camera
+	 * @param name Individual Name
+	 * @param fov Field of View
+	 * @param aspect Aspect Ratio
+	 * @param shiftX ?
+	 * @param shiftY ?
+	 */
+	public void setPinholeCamera(String name, float fov, float aspect) {
+		// save parameters
+		this.currCamera = name;
+		this.fov = fov;
+		this.aspect = aspect;
+		this.cameraType = this.CAMERA_PINHOLE;
+		
+		// set currCamera for rendering
+		currCamera = name;
+
+		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		sunflow.parameter("fov", fov);
+		sunflow.parameter("aspect", aspect);
+		sunflow.parameter("shift.x", shiftX);
+		sunflow.parameter("shift.y", shiftY);
+
+		sunflow.camera(name, CAMERA_PINHOLE);
 	}
 	/**
 	 * set a pinhole camera
@@ -1280,40 +1340,6 @@ public class SunflowAPIAPI {
 			sunflow.render(SunflowAPI.DEFAULT_OPTIONS, fileDisplay);
 		} else {
 			render(fileName);
-		}
-	}
-	/**
-	 * renders scene as tiles
-	 * @param filename Filename, extension has to be provided, Example: "filename.png" 
-	 * @param tileNum Amount of tiles
-	 */
-	public void renderTiles(String filename, int tileNum) {
-		// right distance
-		float cameraZ = (height/2) / (float)Math.tan(Math.PI * fov / 360);
-		float basicZ = eye.z;
-		float mod = 1/(float)tileNum;
-		float mod_half = mod*.5f;
-		for(int i=0;i<tileNum*tileNum;i++) {
-			// Increment tile coordinates
-			if(tileX==tileNum-1) {  
-				tileX=0;  
-				tileY=(tileY+1)%tileNum;  
-			} else  
-				tileX++;
-			// camera position
-			float left = width*(tileX/(float)tileNum - .5f);
-			float right = width*((tileX+1)/(float)tileNum - .5f);
-			float bottom = height*(tileY/(float)tileNum - .5f);
-			float top = height*((tileY+1)/(float)tileNum - .5f);
-			float startX = -((basicZ*mod)*(tileNum*.5f));
-			float startY = ((basicZ*mod)*(tileNum*.5f));
-			float cameraX = startX + (basicZ * mod) * tileX;// left + (right-left)*.5f;
-			float cameraY = startY - (basicZ * mod) * tileY;// bottom + (top-bottom)*.5f;
-			// set position 
-			setCameraPosition(cameraX, cameraY, basicZ*mod_half);
-			setCameraTarget(cameraX, cameraY, 0);
-			render(tileX + "_" + tileY + "_" + filename);
-			System.out.println("tile " + i + " of " + (tileNum*tileNum));
 		}
 	}
 	/**
