@@ -11,7 +11,7 @@ public class BasicHair {
 	private SunflowAPIAPI sunflow = new SunflowAPIAPI();
 	private int sceneWidth = 640;
 	private int sceneHeight = 480;
-	private int pointAmount = 50;
+	private int pointAmount = 20;
 	private float[] hairCoordinates;
 	private float[] hairWidths;
 	public BasicHair() {
@@ -33,21 +33,21 @@ public class BasicHair {
 		
 		// coordinates array
 		hairCoordinates = new float[pointAmount*3];
-		hairWidths = new float[] { .05f };
+		hairWidths = new float[] { .025f };
 		
-		sunflow.drawBox("boxname", 0, 0, 0, 1.5f);
+		sunflow.drawBox("boxname", 0, 0, 0, 1f);
 		
 		// create particle coodinates
-		for(int j=0;j<150;j++) {
+		for(int j=0;j<350;j++) {
 			// particle start position
-			float particleX = (float)Math.cos(j*.5f)*j*.05f;
+			float particleX = (float)Math.cos(j*.5f)*j*.0015f;
 			float particleY = 0;
-			float particleZ = (float)Math.sin(j*.5f)*j*.05f;
+			float particleZ = (float)Math.sin(j*.5f)*j*.0015f;
 			int arrayIndex = 0;
 			hairCoordinates = new float[pointAmount*3];
 			for(int i=0;i<pointAmount;i++) {
-				particleX += .1f + (float)Math.cos(i * .15f + j*.05f) * .3f;
-				particleY += (float)Math.sin(particleZ*.01f + j*.05f)*.25f + (float)Math.cos(i*.5f + particleY)*.25f;
+				particleX += .1f + (float)Math.cos(i * .15f + j*.05f) * .13f;
+				particleY -= (float)Math.sin(particleZ*.01f + j*.05f)*.125f + (float)Math.cos(i*.5f + particleY)*.125f;
 				particleZ += (float)Math.sin(i)*.25f + particleY*.01f;
 				
 				hairCoordinates[arrayIndex++] = particleX;
