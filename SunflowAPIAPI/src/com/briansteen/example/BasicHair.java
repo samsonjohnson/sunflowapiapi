@@ -11,7 +11,7 @@ public class BasicHair {
 	private SunflowAPIAPI sunflow = new SunflowAPIAPI();
 	private int sceneWidth = 640;
 	private int sceneHeight = 480;
-	private int pointAmount = 350;
+	private int pointAmount = 50;
 	private float[] hairCoordinates;
 	private float[] hairWidths;
 	public BasicHair() {
@@ -21,8 +21,8 @@ public class BasicHair {
 		// set background color
 		sunflow.setBackground(1f, 1f, 1f);
 		// set camera
-		sunflow.setCameraPosition(0, 10, 5);
-		sunflow.setCameraTarget(15, 0, 0);
+		sunflow.setCameraPosition(0, 7, 10);
+		sunflow.setCameraTarget(0, .5f, 0);
 		sunflow.setThinlensCamera("thinLensCamera", 50f, (float)sceneWidth/sceneHeight);
 		// set basic light
 		sunflow.setPointLight("myPointLight", new Point3(0,5,5), new Color(255,255,255));
@@ -33,36 +33,38 @@ public class BasicHair {
 		
 		// coordinates array
 		hairCoordinates = new float[pointAmount*3];
-		hairWidths = new float[] { .5f };
-		// particle start position
-		float particleX = 0;
-		float particleY = 0;
-		float particleZ = 0;
+		hairWidths = new float[] { .05f };
+		
+		sunflow.drawBox("boxname", 0, 0, 0, 1.5f);
 		
 		// create particle coodinates
-		int arrayIndex = 0;
-		for(int i=0;i<pointAmount;i++) {
-			particleX += .1f + (float)Math.cos(i * .15f) * 1.3f;
-			particleY += (float)Math.sin(particleZ)*.25f + (float)Math.cos(i*.5f + particleY)*.25f;
-			particleZ += (float)Math.sin(i)*.25f + particleY*.01f;
+		for(int j=0;j<150;j++) {
+			// particle start position
+			float particleX = (float)Math.cos(j*.5f)*j*.05f;
+			float particleY = 0;
+			float particleZ = (float)Math.sin(j*.5f)*j*.05f;
+			int arrayIndex = 0;
+			hairCoordinates = new float[pointAmount*3];
+			for(int i=0;i<pointAmount;i++) {
+				particleX += .1f + (float)Math.cos(i * .15f + j*.05f) * .3f;
+				particleY += (float)Math.sin(particleZ*.01f + j*.05f)*.25f + (float)Math.cos(i*.5f + particleY)*.25f;
+				particleZ += (float)Math.sin(i)*.25f + particleY*.01f;
+				
+				hairCoordinates[arrayIndex++] = particleX;
+				hairCoordinates[arrayIndex++] = particleY;
+				hairCoordinates[arrayIndex++] = particleZ;
+			}
 			
-			hairCoordinates[arrayIndex++] = particleX;
-			hairCoordinates[arrayIndex++] = particleY;
-			hairCoordinates[arrayIndex++] = particleZ;
+			// set ambient occlusion shader
+			sunflow.setAmbientOcclusionShader("myAmbientOcclusionShader"+j, new Color(55,55,55), new Color(0,0,0), 16, 1);
+			// set glass shader
+			// sunflow.setGlassShader("myGlassShader", new Color(1f,1f,1f), 2.5f, 3f, new Color(1f,1f,1f));
+			// set shiny-diffuse shader
+			// sunflow.setShinyDiffuseShader("myShinyShader", new Color(55,55,55), .8f);
 			
-			// set a light
-			sunflow.setPointLight(i + "myPointLight", new Point3(particleX,particleY,particleZ+10), new Color(255,255,255));
+			// draw object
+			sunflow.drawHair("hair"+j, pointAmount-2, hairCoordinates, hairWidths);
 		}
-		
-		// set ambient occlusion shader
-		// sunflow.setAmbientOcclusionShader("myAmbientOcclusionShader", new Color(255,255,255), new Color(0,0,0), 16, 1);
-		// set glass shader
-		sunflow.setGlassShader("myGlassShader", new Color(1f,1f,1f), 2.5f, 3f, new Color(1f,1f,1f));
-		// set shiny-diffuse shader
-		// sunflow.setShinyDiffuseShader("myShinyShader", new Color(255,255,255), .8f);
-		
-		// draw object
-		sunflow.drawHair("hair", pointAmount-1, hairCoordinates, hairWidths);
 		
 		sunflow.setIrradianceCacheGIEngine(32, .4f, 1f, 15f, null);
 		
