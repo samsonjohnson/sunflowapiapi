@@ -771,6 +771,40 @@ public class SunflowAPIAPI {
 		sunflow.parameter( "transform", m ); 
 		sunflow.instance( name + ".instance", name );
 	}
+	
+	/**
+	 * Draws a Cylinder
+	 * @param name
+	 * @param name Individual name
+	 * @param xSize size on x axis
+	 * @param ySize size on y axis
+	 * @param zSize size on z axis
+	 * @param x x position
+	 * @param y y position
+	 * @param z z position 
+	 * @param xRotation x rotation
+	 * @param yRotation y rotation
+	 * @param zRotation z rotation
+	 */
+	public void drawCylinder(String name, float xSize, float ySize, float zSize, float x, float y, float z, float xRotation, float yRotation, float zRotation) {
+		Matrix4 translate = Matrix4.IDENTITY.multiply( Matrix4.translation(x, y, z ));
+		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(xSize, ySize, zSize) );
+		Matrix4 rotate = Matrix4.IDENTITY 
+		.multiply( Matrix4.rotateZ(zRotation) ) 
+		.multiply( Matrix4.rotateX(xRotation) ) 
+		.multiply( Matrix4.rotateY(yRotation) );
+
+		Matrix4 m = Matrix4.IDENTITY;
+		m = scale.multiply(m);
+		m = rotate.multiply(m); 
+		m = translate.multiply(m);
+
+		sunflow.geometry( name, "cylinder" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.parameter( "transform", m ); 
+		sunflow.instance( name + ".instance", name );
+	}
 
 	/**
 	 * Draws a Banchoff Surface
@@ -958,6 +992,25 @@ public class SunflowAPIAPI {
      * MY OWN SHAPES
      * --------------------------------------------------------------------------------------
      */
+    /**
+     * draws a rectangle
+     * @name individual name
+     * @param first corner
+     * @param second corner
+     * @param third corner
+     * @param fourth corner
+     */
+    public void rect(String name, Point3 corner0, Point3 corner1, Point3 corner2, Point3 corner3) {
+    	// define vertices
+    	float[] vertices = {corner0.x, corner0.y, corner0.z,
+    			corner1.x, corner1.y, corner1.z,
+    			corner2.x, corner2.y, corner2.z, 
+    			corner3.x, corner3.y, corner3.z};
+    	// define triangles
+    	int[] triangles = {0,1,2,0,2,3};
+    	// draw mesh
+    	this.drawMesh(name, vertices, triangles);
+    }
 	
 	/*
 	 * --------------------------------------------------------------------------------------
@@ -1002,8 +1055,6 @@ public class SunflowAPIAPI {
 	 * @param name Individual Name
 	 * @param fov Field of View
 	 * @param aspect Aspect Ratio
-	 * @param shiftX ?
-	 * @param shiftY ?
 	 */
 	public void setPinholeCamera(String name, float fov, float aspect) {
 		// save parameters
