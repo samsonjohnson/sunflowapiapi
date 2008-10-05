@@ -1450,4 +1450,37 @@ public class SunflowAPIAPI {
 	public void setAaMax(int aaMax) {
 		this.aaMax = aaMax;
 	}
+	
+	/*
+	 * --------------------------------------------------------------------------------------
+	 * UTILITIES
+	 */
+	
+	/**
+	 * writes basic settings (camera, light, shader)
+	 * note: one still has to set the ambient occlusion shader
+	 * @param sceneWidth width of rendering
+	 * @param sceneHeight height of rendering
+	 */
+	public void setBasicScene(int sceneWidth, int sceneHeight) {
+		// set width and height
+		this.setWidth(sceneWidth);
+		this.setHeight(sceneHeight);
+		// set camera
+		this.setCameraPosition(0, 2, 15);
+		this.setThinlensCamera("thinLensCamera", 50f, (float)sceneWidth/sceneHeight);
+		// set basic light
+		this.setSunSkyLight("mySunskyLight");
+		this.setPointLight("myPointLight", new Point3(0,5,5), new Color(255,255,255));
+		this.setDirectionalLight("myDirectionalLight", new Point3(-2,3,0), new Vector3(0,0,0), 3, new Color(1f,0f,0f));
+		// set shader
+		this.setAmbientOcclusionShader("myAmbientOcclusionShader", new Color(255,255,255), new Color(0,0,0), 16, 1);
+		// draw a ground plane
+		this.drawPlane("internal_basic_ground", new Point3(0,0,0), new Vector3(0,1,0));
+	}
+	
+	/*
+	 * END OF UTILITIES
+	 * --------------------------------------------------------------------------------------
+	 */
 }
