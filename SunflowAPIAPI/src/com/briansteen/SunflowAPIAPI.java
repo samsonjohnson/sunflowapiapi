@@ -146,7 +146,7 @@ public class SunflowAPIAPI {
 		sunflow.parameter("source", source);
 		sunflow.parameter("dir", direction);
 		sunflow.parameter("radius", radius);
-		sunflow.parameter("radiance", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("radiance", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.light( name, LIGHT_DIRECTIONAL );
 	}
 	/**
@@ -174,7 +174,7 @@ public class SunflowAPIAPI {
 	 */
 	public void setPointLight(String name, Point3 center, Color color) {
 		sunflow.parameter("center", center);
-		sunflow.parameter("power", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("power", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.light( name, this.LIGHT_POINT );
 	}
 	/**
@@ -187,7 +187,7 @@ public class SunflowAPIAPI {
 	 */
 	public void setSphereLight(String name, Point3 center, Color color, int samples, float radius) {
 		sunflow.parameter("center", center);
-		sunflow.parameter("radiance", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("radiance", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("samples", samples);
 		sunflow.parameter("radius", radius);
         sunflow.light( name, LIGHT_SPHERE );
@@ -219,7 +219,7 @@ public class SunflowAPIAPI {
 		sunflow.parameter("up", name);
 		sunflow.parameter("east", up);
 		sunflow.parameter("sundir", direction);
-		sunflow.parameter("ground.color", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("ground.color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("samples", samples);
 		sunflow.parameter("turbidity", turbidity);
 		sunflow.parameter("ground.extendsky", groundExtendSky);
@@ -271,8 +271,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255, bright.getGreen(), bright.getBlue());
-		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255, dark.getGreen(), dark.getBlue());
+		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255, bright.getGreen()/(float)255, bright.getBlue()/(float)255);
+		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255, dark.getGreen()/(float)255, dark.getBlue()/(float)255);
 		sunflow.parameter("samples", samples);
 		sunflow.parameter("maxdist", maxDist);
 		sunflow.parameter("texture", texture);
@@ -291,7 +291,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 
 //		set shader
 		sunflow.shader(currShader, SHADER_CONSTANT);
@@ -307,7 +307,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 
 //		set shader
 		sunflow.shader(currShader, SHADER_DIFFUSE);
@@ -324,7 +324,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("texture", texture);
 
 //		set shader
@@ -344,10 +344,10 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("eta", eta);
 		sunflow.parameter("absorption.distance", absorptionDistance);
-		sunflow.parameter("absorption.color", colorSpace, absorptionColor.getRed()/(float)255, absorptionColor.getGreen(), absorptionColor.getBlue());
+		sunflow.parameter("absorption.color", colorSpace, absorptionColor.getRed()/(float)255, absorptionColor.getGreen()/(float)255, absorptionColor.getBlue()/(float)255);
 
 //		set shader
 		sunflow.shader(currShader, SHADER_GLASS);
@@ -363,7 +363,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 
 //		set shader
 		sunflow.shader(currShader, SHADER_MIRROR);
@@ -382,8 +382,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen(), diffuse.getBlue());
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen(), specular.getBlue());
+		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
+		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
 		sunflow.parameter("power", power);
 		sunflow.parameter("samples", samples);
 
@@ -405,8 +405,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen(), diffuse.getBlue());
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen(), specular.getBlue());
+		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
+		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
 		sunflow.parameter("power", power);
 		sunflow.parameter("samples", samples);
 		sunflow.parameter("texture", texture);
@@ -425,7 +425,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("shiny", shiny);
 
 //		set shader
@@ -443,7 +443,7 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen(), color.getBlue());
+		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("shiny", shiny);
 		sunflow.parameter("texture", texture);
 
@@ -468,8 +468,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen(), diffuse.getBlue());
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen(), specular.getBlue());
+		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
+		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
 		sunflow.parameter("diffuse.texture", diffuseTexture);
 		sunflow.parameter("specular.texture", specularTexture);
 		sunflow.parameter("diffuse.blend", diffuseBlend);
@@ -495,8 +495,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen(), diffuse.getBlue());
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen(), specular.getBlue());
+		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
+		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
 		sunflow.parameter("roughnessX", roughnessX);
 		sunflow.parameter("roughnessY", roughnessY);
 		sunflow.parameter("samples", samples);
@@ -520,8 +520,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen(), diffuse.getBlue());
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen(), specular.getBlue());
+		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
+		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
 		sunflow.parameter("roughnessX", roughnessX);
 		sunflow.parameter("roughnessY", roughnessY);
 		sunflow.parameter("samples", samples);
@@ -543,8 +543,8 @@ public class SunflowAPIAPI {
 		currShader = name;
 
 //		set parameter
-		sunflow.parameter("line", colorSpace, lineColor.getRed()/(float)255, lineColor.getGreen(), lineColor.getBlue());
-		sunflow.parameter("fill", colorSpace, fillColor.getRed()/(float)255, fillColor.getGreen(), fillColor.getBlue());
+		sunflow.parameter("line", colorSpace, lineColor.getRed()/(float)255, lineColor.getGreen()/(float)255, lineColor.getBlue()/(float)255);
+		sunflow.parameter("fill", colorSpace, fillColor.getRed()/(float)255, fillColor.getGreen()/(float)255, fillColor.getBlue()/(float)255);
 		sunflow.parameter("width", width);
 
 //		set shader
