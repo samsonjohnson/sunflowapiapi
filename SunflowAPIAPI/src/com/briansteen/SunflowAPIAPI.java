@@ -16,6 +16,7 @@ public class SunflowAPIAPI {
 	private String currBucketOrder;
 	private String currFilter;
 	private String cameraType;
+	private String modifierType;
 	
 	private SunflowAPI sunflow;
 
@@ -59,6 +60,7 @@ public class SunflowAPIAPI {
 	public final String LIGHT_POINT = "point";
 	public final String LIGHT_SPHERE = "sphere";
 	public final String LIGHT_SUNSKY = "sunsky";
+	public final String LIGHT_MESH = "triangle_mesh";
 	
 	public final String BUCKET_ORDER_COLUMN = "column";
 	public final String BUCKET_ORDER_DIAGONAL = "diagonal";
@@ -76,6 +78,10 @@ public class SunflowAPIAPI {
 	public final String FILTER_SINC = "sinc";
 	public final String FILTER_TRIANGLE = "triangle";
 	public final String FILTER_BSPLINE = "bspline";
+	
+	public final String MODIFIER_BUMP_MAP = "bump_map";
+	public final String MODIFIER_NORMAL_MAP = "normal_map";
+	public final String MODIFIER_PERLIN_MAP = "perlin";
 
 	private Point3 eye; 
 	private Point3 target; 
@@ -90,6 +96,9 @@ public class SunflowAPIAPI {
 	private float lensRotation;
 	private int tileX;
 	private int tileY;
+
+	// modifier parameters
+	private int modifiercount = 0;
 
 	private boolean isModifiers = false;
 	private int aaMin = 1;
@@ -225,6 +234,25 @@ public class SunflowAPIAPI {
 		sunflow.parameter("ground.extendsky", groundExtendSky);
         sunflow.light( name, this.LIGHT_SUNSKY );
 	}
+	
+	/**
+	 * sets mesh light
+	 * @param name Individual name
+	 * @param color light color
+	 * @param samples Detail
+	 * @param vertices Float array with coordinates (like [x0,y0,z0,x1,y1,z1,x2,y2,z2])
+	 * @param triangles int array connecting the vertices (like [0,1,2])
+	 */
+	public void drawMeshLight(String name, Color color, int samples, float[] vertices, int[] triangles) {
+		sunflow.parameter("points", "point", "vertex", vertices); 
+		sunflow.parameter("triangles", triangles);
+		
+		sunflow.parameter("radiance", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
+		sunflow.parameter("samples", samples);
+		
+		sunflow.light( name, this.LIGHT_MESH);
+	}
+	
 	/*
 	 * END OF LIGHTS
 	 * --------------------------------------------------------------------------------------
@@ -558,6 +586,29 @@ public class SunflowAPIAPI {
 
 	/*
 	 * --------------------------------------------------------------------------------------
+	 * MODIFIERS
+	 */
+		
+	public void setPerlinModifier(String name, int function, float size, float scale) {
+		currModifier = name + modifiercount;		
+		modifierType = MODIFIER_PERLIN_MAP;
+		
+		sunflow.parameter("function", function);
+		sunflow.parameter("size", size);
+		sunflow.parameter("scale", scale);
+		sunflow.modifier(currModifier, modifierType);
+		
+		modifiercount++;
+		isModifiers = true;
+	}
+	
+	/*
+	 * END OF MODIFIERS
+	 * --------------------------------------------------------------------------------------
+	 */
+	
+	/*
+	 * --------------------------------------------------------------------------------------
 	 * PRIMITIVES
 	 */
 
@@ -869,6 +920,73 @@ public class SunflowAPIAPI {
 		sunflow.parameter( "transform", m ); 
 		sunflow.instance( name + ".instance", name );
 	}
+	
+
+
+	/**
+
+	 * Draws a Julia
+
+	 * @param name Individual name
+
+	 * @param x x position
+
+	 * @param y y position
+
+	 * @param z z position 
+
+	 * @param size size
+
+	 * @param xRotation x rotation
+
+	 * @param yRotation y rotation
+
+	 * @param zRotation z rotation
+
+
+
+	 * @param float[] q = four quaternization variables
+
+	 * @param int iterations = level of detail
+
+	 * @param float epsilon = level of accuracy
+
+	 */
+
+
+
+	public void drawJulia(String name, float x, float y, float z, float size, float xRotation, float yRotation, float zRotation, float[] q, int iterations, float epsilon) {
+
+		Matrix4 translate = Matrix4.IDENTITY.multiply( Matrix4.translation(x, y, z ));
+		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(size, size, size) );
+		Matrix4 rotate = Matrix4.IDENTITY 
+		.multiply( Matrix4.rotateZ(zRotation) ) 
+		.multiply( Matrix4.rotateX(xRotation) ) 
+		.multiply( Matrix4.rotateY(yRotation) );
+
+		Matrix4 m = Matrix4.IDENTITY;
+		m = scale.multiply(m);
+		m = rotate.multiply(m); 
+		m = translate.multiply(m);
+
+		sunflow.parameter("iterations", iterations);
+		sunflow.parameter("epsilon", epsilon);
+		
+        sunflow.parameter("cw", q[0]);
+        sunflow.parameter("cx", q[1]);
+        sunflow.parameter("cy", q[2]);
+        sunflow.parameter("cz", q[3]);
+		
+		sunflow.geometry( name, "julia" );
+		sunflow.parameter( "shaders", currShader);
+
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.parameter( "transform", m ); 
+		sunflow.instance( name + ".instance", name );
+
+	}
+
+
 
 	/**
 	 * set background
@@ -988,10 +1106,7 @@ public class SunflowAPIAPI {
 		sunflow.instance( name + ".instance", name );
     }
     
-    /*
-     * MY OWN SHAPES
-     * --------------------------------------------------------------------------------------
-     */
+
     /**
      * draws a rectangle
      * @name individual name
@@ -1012,6 +1127,11 @@ public class SunflowAPIAPI {
     	this.drawMesh(name, vertices, triangles);
     }
 	
+    /*
+     * MY OWN SHAPES
+     * --------------------------------------------------------------------------------------
+     */
+    
 	/*
 	 * --------------------------------------------------------------------------------------
 	 * CAMERAS
@@ -1256,7 +1376,7 @@ public class SunflowAPIAPI {
 	 * @param c ?
 	 * @param bias_samples ?
 	 */
-	public void setInstantGIEngine(int samples, int sets, float c, float bias_samples) {
+	public void setInstantGIEngine(int samples, int sets, float c, int bias_samples) {
 		sunflow.parameter("gi.engine", GI_INSTANT_GI);
 		sunflow.parameter("gi.igi.samples", samples);
 		sunflow.parameter("gi.igi.sets", sets);
