@@ -21,8 +21,8 @@ public class BasicHair {
 		// set background color
 		sunflow.setBackground(1f, 1f, 1f);
 		// set camera
-		sunflow.setCameraPosition(0, 7, 10);
-		sunflow.setCameraTarget(0, .5f, 0);
+		sunflow.setCameraPosition(0, 7, 5);
+		sunflow.setCameraTarget(2, .5f, 0);
 		sunflow.setThinlensCamera("thinLensCamera", 50f, (float)sceneWidth/sceneHeight);
 		// set basic light
 		sunflow.setPointLight("myPointLight", new Point3(0,5,5), new Color(255,255,255));
