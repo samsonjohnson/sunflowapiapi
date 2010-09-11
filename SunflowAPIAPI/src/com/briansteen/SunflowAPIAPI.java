@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import org.sunflow.SunflowAPI;
 import org.sunflow.core.Display;
+import org.sunflow.core.ParameterList.FloatParameter;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.math.Matrix4;
 import org.sunflow.math.Point3;
@@ -613,7 +614,7 @@ public class SunflowAPIAPI {
 	 */
 
 	/**
-	 * sets a mesh primitive
+	 * draws a mesh primitive
 	 * @param name individual name of primitive
 	 * @param vertices Float array with coordinates (like [x0,y0,z0,x1,y1,z1,x2,y2,z2])
 	 * @param triangles int array connecting the vertices (like [0,1,2])
@@ -627,6 +628,35 @@ public class SunflowAPIAPI {
 		if(isModifiers) sunflow.parameter("modifiers", currModifier);
 		sunflow.instance( name + ".instance", name );
 	}
+	
+	/**
+	 * draws a bezier patch
+	 * @param name individual name of primitive
+	 * @param subdivs int value of how much subdivisions
+	 * @param smooth boolean is bezier patch set to smooth
+	 * @param quads boolean if patch uses quads
+	 * @param nu number of points in vertical direction
+	 * @param nv number of points in horizontal direction
+	 * @param uwrap boolean ? best is to use false
+	 * @param vwrap boolean ? best is to use false
+	 * @param points Float array with coordinates (like [x0,y0,z0,x1,y1,z1,x2,y2,z2])
+	 */
+	public void drawBezierMesh(String name, int subdivs, boolean smooth, boolean quads, int nu, int nv, boolean uwrap, boolean vwrap, float[] points) {
+		sunflow.parameter("subdivs", subdivs);
+		sunflow.parameter("smooth", smooth);
+		sunflow.parameter("quads", quads);
+		sunflow.parameter("nu", nu);
+		sunflow.parameter("nv", nv);
+		sunflow.parameter("uwrap", uwrap);
+		sunflow.parameter("vwrap", vwrap);
+		sunflow.parameter("points", "point", "vertex", points);
+
+		sunflow.geometry( name, "bezier_mesh" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.instance( name + ".instance", name );
+	}
+	
 	/**
 	 * draws a sphere
 	 * @param name Individual name
