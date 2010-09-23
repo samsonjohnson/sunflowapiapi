@@ -226,8 +226,8 @@ public class SunflowAPIAPI {
 	 * @param groundExtendSky ?
 	 */
 	public void setSunSkyLight(String name, Vector3 up, Vector3 east, Vector3 direction, Color color, int samples, float turbidity, boolean groundExtendSky) {
-		sunflow.parameter("up", name);
-		sunflow.parameter("east", up);
+		sunflow.parameter("up", up);
+		sunflow.parameter("east", east);
 		sunflow.parameter("sundir", direction);
 		sunflow.parameter("ground.color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
 		sunflow.parameter("samples", samples);
@@ -1017,6 +1017,65 @@ public class SunflowAPIAPI {
 	}
 
 
+	/**
+	 * Draws a SphereFlake (note: requires Sunflow version 0.07.3)
+
+	 * @param level = numbers of iterative levels ranging from 0 to 20
+	 * @param axis = axis orientation
+	 * @param radius = radius for the inititial sphere
+	 */
+
+	public void drawSphereFlake(String name, int level, Vector3 axis, float radius) {
+		sunflow.parameter("level", level);
+		sunflow.parameter("axis", axis);
+ 		sunflow.parameter("radius", radius);
+ 
+		sunflow.geometry( name, "sphereflake" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.instance( name + ".instance", name );
+	}
+
+	/**
+	 * Draws a SphereFlake (note: requires Sunflow version 0.07.3)
+	 * @param name Individual name
+	 * @param x x position
+	 * @param y y position
+	 * @param z z position 
+	 * @param size size
+	 * @param xRotation x rotation
+	 * @param yRotation y rotation
+	 * @param zRotation z rotation
+
+	 * @param level = numbers of iterative levels ranging from 0 to 20
+	 * @param axis = axis orientation
+	 * @param radius = radius for the inititial sphere
+	 */
+
+	public void drawSphereFlake(String name, float x, float y, float z, float size, float xRotation, float yRotation, float zRotation,
+	int level, Vector3 axis, float radius) {
+		Matrix4 translate = Matrix4.IDENTITY.multiply( Matrix4.translation(x, y, z ));
+		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(size, size, size) );
+		Matrix4 rotate = Matrix4.IDENTITY 
+		.multiply( Matrix4.rotateZ(zRotation) ) 
+		.multiply( Matrix4.rotateX(xRotation) ) 
+		.multiply( Matrix4.rotateY(yRotation) );
+
+		Matrix4 m = Matrix4.IDENTITY;
+		m = scale.multiply(m);
+		m = rotate.multiply(m); 
+		m = translate.multiply(m);
+
+		sunflow.parameter("level", level);
+		sunflow.parameter("axis", axis);
+ 		sunflow.parameter("radius", radius);
+ 
+		sunflow.geometry( name, "sphereflake" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.parameter( "transform", m ); 
+		sunflow.instance( name + ".instance", name );
+	}
 
 	/**
 	 * set background
