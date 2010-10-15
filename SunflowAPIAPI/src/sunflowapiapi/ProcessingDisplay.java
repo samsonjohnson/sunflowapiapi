@@ -137,14 +137,21 @@ public class ProcessingDisplay implements Display {
 		// Create buffered image
 		BufferedImage img = new BufferedImage(width, height,
 				BufferedImage.TYPE_3BYTE_BGR);
-		int id = pixels.length-1;	
+		int id = 0;// pixels.length-1;	
+//		for (int y = height-1; y >= 0; y--) {
+//			for (int x = 0; x < width; x++) {
+//				// draw pixels array
+//				img.setRGB(x, y, pixels[id++]);
+//			}
+//		}
+
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
 				// draw pixels array
-				img.setRGB(x, y, pixels[id--]);
+				img.setRGB(x, y, pixels[id++]);
 			}
 		}
-
+		
 		pg.drawImage(img, 0, 0, null);
 		preview.repaint();
 	}
