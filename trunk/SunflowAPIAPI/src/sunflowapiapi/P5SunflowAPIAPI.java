@@ -1,13 +1,12 @@
 package sunflowapiapi;
 
-
+// TODO: es gibt eine fiese vermischung von triangles und kameraposition
+// wenn sich die kameraposition Šndert, verschieben sich die triangles anstatt die kamera.
+// fiese sache das
+// vlt. camera transform matrix raufrechnen, damit die vertices wieder stimmen?
 import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.image.DirectColorModel;
-import java.awt.image.MemoryImageSource;
 
 import org.sunflow.SunflowAPI;
-import org.sunflow.core.Display;
 import org.sunflow.core.display.FileDisplay;
 import org.sunflow.core.display.FrameDisplay;
 import org.sunflow.math.Matrix4;
@@ -132,6 +131,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	protected PApplet applet;
 	protected ProcessingDisplay display;
 	
+	/* for conversion from processing */
+	float sunflowEyeX, sunflowEyeY, sunflowEyeZ,
+  	sunflowCenterX, sunflowCenterY, sunflowCenterZ,
+  	sunflowUpX, sunflowUpY, sunflowUpZ;
+	
 	/**
 	 * Default constructor.  Called by processing
 	 * @param width
@@ -152,8 +156,13 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	   * No drawing can happen in this function, and no talking to the graphics
 	   * context. That is, no glXxxx() calls, or other things that change state.
 	   */
-	  public void setSize(int iwidth, int iheight) {  // ignore
+	  public void setSize(int iwidth, int iheight) {
 	    super.setSize(iwidth, iheight);
+	    
+	    // overwrite camera settings
+	    cameraX = 0;// width / 2.0f;
+	    cameraY = 0;// height / 2.0f;
+	    cameraZ = 10;// cameraY / ((float) Math.tan(cameraFOV / 2.0f));
 	  }
 	  
 	  
@@ -163,104 +172,22 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		uniqueID = 0;
 		sunflow = null;
 		sunflow = new SunflowAPI();
-		/*
-		// TODO: set at each beginDraw and let user change it
-		// camera position
-		eye = new Point3(0, 0, cameraZ);
-		target = new Point3(0, 0, 0);
-		up = new Vector3(0, 1, 0);
-		// camera default values
-		fov = cameraFOV/(3.1414f/180); // internal fov seems to be radians
-		aspect = 1;// this.height / this.width;
-		currCamera = "internal_defaultcamera";
-		focusDistance = 1;
-		lensRadius = 0;
-		sides = 0;
-		lensRotation = 0;
-		setWidth(this.width);
-		setHeight(this.height);
-		// set camera
-		this.setThinlensCamera("internal_defaultcamera", fov, aspect);
-		resetCamera();
-		*/
-		fov = cameraFOV/(3.1414f/180); // internal fov seems to be radians
-		this.setThinlensCamera("internal_defaultcamera", fov, aspect);
-		// default camera
-		// TODO: let user set it
-		// camera(0, 0, 100, 0, 0, 0, 0, 1, 0);
-		
-		// shader
+		fov = cameraFOV * RAD_TO_DEG;
+		// default cam
+		this.setPinholeCamera("internal_defaultcamera", fov, aspect);
+		// default shader
 		this.setAmbientOcclusionShader("internal_defaultshader", new Color(1f,
 				1f, 1f), new Color(0f, 0f, 0f), 16, 50);
 		// bucket order
 		currBucketOrder = BUCKET_ORDER_SPIRAL;
 		// filter
 		currFilter = FILTER_MITCHELL;
-		// default engine
-		// setIrradianceCacheGIEngine(32, .4f, 1f, 15f, null);
 	}
 	
 	  public void perspective(float fov, float aspect, float zNear, float zFar){
 		  super.perspective(fov, aspect, zNear, zFar);
-		  //////////////////converting from p5 to sunflow parameters///////////////////
-		  ///converting p5's radian input to sunflow's degree input                 ///
-		  ///																	    ///
-		  this.fov = fov*360/(2*PI);
-		  ///																	    ///
-		  /////////////////////////////////////////////////////////////////////////////
 		  this.aspect = aspect;
 		  resetCamera();
-	  }
-	  
-	  public void camera(float eyeX, float eyeY, float eyeZ,
-              float centerX, float centerY, float centerZ,
-              float upX, float upY, float upZ) {
-		  
-		  super.camera(eyeX, eyeY, eyeZ, centerX, centerY, centerZ, upX, upY, upZ);
-		  
-		  float sunflowEyeX, sunflowEyeY, sunflowEyeZ,
-		  	sunflowCenterX, sunflowCenterY, sunflowCenterZ,
-		  	sunflowUpX, sunflowUpY, sunflowUpZ;
-		  
-		  /*
-		   *  and now for the sunflow part
-		   *  adopted from joons renderer (http://code.google.com/p/joons-renderer/)
-		   */
-		  
-		  //////////////// converting from p5 to sunflow parameters /////////////////////
-		  // compensating for the different ways p5 and sunflow implement aspect ratio///
-		  
-		if (aspect != 0) {
-
-			PVector sightV = new PVector(eyeX - centerX, eyeY - centerY, eyeZ
-					- centerZ);
-			
-			sunflowEyeX = centerX + aspect * sightV.x;
-			sunflowEyeY = -(centerY + aspect * sightV.y); // minus y because of p5's coord. properties
-			sunflowEyeZ = centerZ + aspect * sightV.z;
-			eye = new Point3(sunflowEyeX, sunflowEyeY, sunflowEyeZ);
-		} else {
-			System.out
-					.println("P5SunflowAPIAPI: Please use perspective() before camera()");
-			parent.exit();
-		}
-
-		// compensating for the different ways p5 and sunflow implement up-vector ///
-		sunflowUpX = upX;
-		sunflowUpY = -upY; // -1 * -1 = 1 for upY, because p5's y's inversed
-		sunflowUpZ = upZ;
-		
-		up = new Vector3(sunflowUpX, sunflowUpY, sunflowUpZ);
-		
-		sunflowCenterX = centerX;
-		//compensating for p5's inversed y direction
-		sunflowCenterY = -centerY;
-		sunflowCenterZ = centerZ;
-		
-		target = new Point3(sunflowCenterX, sunflowCenterY, sunflowCenterZ);
-		
-		/////////////////////////////////////////////////////////////////////////////
-		resetCamera();
 	  }
 	
 	  /*
@@ -319,7 +246,7 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		      sunflowVertices[vertexID++] = c[VZ];
 		      sunflowTriangles[triangleID] = triangleID++;
 
-		      
+		      System.out.println(a[VX] + " " + a[VY] + " " + a[VZ]);
 		  }
 		  this.drawMesh("mesh" + uniqueID++, sunflowVertices, sunflowTriangles);
 		  
@@ -1478,7 +1405,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		// set currCamera for rendering
 		currCamera = name;
 
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true));
 		sunflow.parameter("fov", fov);
 		sunflow.parameter("aspect", aspect);
 		sunflow.parameter("shift.x", shiftX);
@@ -1506,7 +1437,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		// set currCamera for rendering
 		currCamera = name;
 
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true));
 		sunflow.parameter("fov", fov);
 		sunflow.parameter("aspect", aspect);
 		sunflow.parameter("shift.x", shiftX);
@@ -1528,13 +1463,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		this.aspect = aspect;
 		this.cameraType = this.CAMERA_THINLENS;
 		
-		// save parameters
-		this.fov = fov;
-		this.aspect = aspect;
-//		set currCamera for rendering
-		currCamera = name;
-		
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true));
 		sunflow.parameter("fov", fov);
 		sunflow.parameter("aspect", aspect);
 
@@ -1568,8 +1501,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		
 		// set currCamera for rendering
 		currCamera = name;
-
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true));
 		sunflow.parameter("fov", fov);
 		sunflow.parameter("aspect", aspect);
 		sunflow.parameter("shift.x", shiftX);
@@ -1590,7 +1526,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 //		set currCamera for rendering
 		this.currCamera = name;
 
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true));
 
 		sunflow.camera(name, CAMERA_FISHEYE);
 	}
@@ -1603,7 +1543,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 //		set currCamera for rendering
 		this.currCamera = name;
 
-		sunflow.parameter("transform", Matrix4.lookAt(eye, target, up)); 
+		float[] camMatrix = {cameraInv.m00, cameraInv.m01, cameraInv.m02, cameraInv.m03,
+				cameraInv.m10, cameraInv.m11, cameraInv.m12, cameraInv.m13,
+				cameraInv.m20, cameraInv.m21, cameraInv.m22, cameraInv.m23,
+				cameraInv.m30, cameraInv.m31, cameraInv.m32, cameraInv.m33};
+		sunflow.parameter("transform", new Matrix4( camMatrix, true)); 
 
 		sunflow.camera(name, CAMERA_SPHERICAL);
 	}
@@ -1755,7 +1699,6 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	}
 	
 	public void render(){
-		System.out.println(eye.toString() + " " + target.toString() + " " + up.toString() + " " + aspect + " " + fov);
 		System.out.println("after scene.set : " + sunflow.getBounds().toString());
 		System.out.println("after camera.set : " + sunflow.getBounds().toString());
 //		rendering options
