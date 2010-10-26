@@ -1,9 +1,4 @@
 package sunflowapiapi;
-
-// TODO: es gibt eine fiese vermischung von triangles und kameraposition
-// wenn sich die kameraposition Šndert, verschieben sich die triangles anstatt die kamera.
-// fiese sache das
-// vlt. camera transform matrix raufrechnen, damit die vertices wieder stimmen?
 import java.awt.Color;
 
 import org.sunflow.SunflowAPI;
@@ -18,7 +13,7 @@ import processing.core.PGraphics3D;
 import processing.core.PVector;
 
 /**
- * This class glues Sunflow and Processing together. Partly borrowed by Hipsterinc P5Sunflow (http://hipstersinc.com/p5sunflow/)
+ * This class glues Sunflow and Processing together. Partly borrowed from Hipsterinc P5Sunflow (http://hipstersinc.com/p5sunflow/)
  * @author chwarnow
  *
  */
@@ -132,9 +127,7 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	protected ProcessingDisplay display;
 	
 	/* for conversion from processing */
-	float sunflowEyeX, sunflowEyeY, sunflowEyeZ,
-  	sunflowCenterX, sunflowCenterY, sunflowCenterZ,
-  	sunflowUpX, sunflowUpY, sunflowUpZ;
+	SunflowShader shader;
 	
 	/**
 	 * Default constructor.  Called by processing
@@ -170,8 +163,10 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		super.beginDraw();
 		// set default values
 		uniqueID = 0;
+		shader = null;
 		sunflow = null;
 		sunflow = new SunflowAPI();
+		shader = new SunflowShader(sunflow);
 		fov = cameraFOV * RAD_TO_DEG;
 		// default cam
 		this.setPinholeCamera("internal_defaultcamera", fov, aspect);
@@ -196,6 +191,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	   */
 	  protected void renderLines(int start, int stop) {
 		super.renderLines(start, stop);
+		
+		// apply current color to current shader
+		shader.applyCurrentShader(calcR, calcG, calcB);
+		currShader = shader.currentName;
+		
 		float[] hairCoordinates = new float[(stop-start) * 6];
 		float[] hairWidths = new float[] { .05f };
 		
@@ -222,6 +222,11 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	  
 	  protected void renderTriangles(int start, int stop) {
 		  super.renderTriangles(start, stop);
+		  
+		  // apply current color to current shader
+		  shader.applyCurrentShader(calcR, calcG, calcB);
+		  currShader = shader.currentName;
+		  
 		  float[] sunflowVertices = new float[(stop-start)*9];
 		  int[] sunflowTriangles = new int[(stop-start)*3];
 		  int vertexID = 0;
@@ -245,30 +250,28 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 		      sunflowVertices[vertexID++] = c[VY];
 		      sunflowVertices[vertexID++] = c[VZ];
 		      sunflowTriangles[triangleID] = triangleID++;
-
-		      System.out.println(a[VX] + " " + a[VY] + " " + a[VZ]);
 		  }
 		  this.drawMesh("mesh" + uniqueID++, sunflowVertices, sunflowTriangles);
 		  
 	  }
 
-	  	//////////////////////////////////////////////////////////////////
-		// Background Methods
-		public void background(int i) {
-			super.background(i);
-			this.setBackground(backgroundR, backgroundG, backgroundB);
-		}
+	//////////////////////////////////////////////////////////////////
+	// Background Methods
+	public void background(int i) {
+		super.background(i);
+		this.setBackground(backgroundR, backgroundG, backgroundB);
+	}
 		
-		public void background(int r, int g, int b) {
-			super.background(r,g,b);
-			this.setBackground(backgroundR, backgroundG, backgroundB);
-		}
+	public void background(int r, int g, int b) {
+		super.background(r,g,b);
+		this.setBackground(backgroundR, backgroundG, backgroundB);
+	}
 		
-		public void background(float r, float g, float b) {
-			super.background(r,g,b);
-			this.setBackground(backgroundR, backgroundG, backgroundB);
-		}
-	  
+	public void background(float r, float g, float b) {
+		super.background(r,g,b);
+		this.setBackground(backgroundR, backgroundG, backgroundB);
+	}
+	
 	/*
 	 * --------------------------------------------------------------------------------------
 	 * LIGHTS
@@ -391,6 +394,266 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	
 	/*
 	 * --------------------------------------------------------------------------------------
+	 * SHADER PROCESSING VERSION
+	 */
+	
+	/**
+	 * Sets default Ambient Occlusion Shader
+	 * @param bright Highlight Color
+	 * @param dark Dark Color
+	 * @param samples Detail, the higher the slower and smoother
+	 * @param maxDist ?
+	 */
+	public void setAmbientOcclusionShader() {
+		shader.setAmbientOcclusionShader(new Color(calcR, calcG, calcB), new Color(calcR*.25f, calcG*.25f, calcB*.25f), 16, 10);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets Ambient Occlusion Shader
+	 * @param bright Highlight Color
+	 * @param dark Dark Color
+	 * @param samples Detail, the higher the slower and smoother
+	 * @param maxDist ?
+	 */
+	public void setAmbientOcclusionShader(Color bright, Color dark, int samples, float maxDist) {
+		shader.setAmbientOcclusionShader(bright, dark, samples, maxDist);;
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Ambient Occlusion Shader
+	 * @param bright Highlight Color
+	 * @param dark Dark Color
+	 * @param samples Detail, the higher the slower and smoother
+	 * @param maxDist ?
+	 * @param texture Path to texture file
+	 */
+	public void setAmbientOcclusionShader(Color bright, Color dark, int samples, float maxDist, String texture) {
+		shader.setAmbientOcclusionShader(bright, dark, samples, maxDist, texture);
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets constant shader
+	 */
+	public void setConstantShader() {
+		shader.setConstantShader(new Color(calcR, calcG, calcB));
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets constant shader
+	 * @param color Color
+	 */
+	public void setConstantShader(Color color) {
+		shader.setConstantShader(color);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets Diffuse Shader
+	 */
+	public void setDiffuseShader() {
+		// use processing current color
+		shader.setDiffuseShader(new Color(calcR, calcG, calcB));
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Diffuse Shader
+	 * @param color Color
+	 */
+	public void setDiffuseShader(Color color) {
+		shader.setDiffuseShader(color);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Diffuse Shader
+	 * @param color Color
+	 * @param texture Path to texture file
+	 */
+	public void setDiffuseShader(Color color, String texture) {
+		shader.setDiffuseShader(color, texture);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets a default Glass Shader
+	 */
+	public void setGlassShader() {
+		shader.setGlassShader(new Color(calcR, calcG, calcB), 2.5f, 3.0f, new Color(calcR*.25f, calcG*.25f, calcB*.25f));
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Glass Shader
+	 * @param color Color
+	 * @param eta ?
+	 * @param absorptionDistance ?
+	 * @param absorptionColor Color
+	 */
+	public void setGlassShader(Color color, float eta, float absorptionDistance, Color absorptionColor) {
+		shader.setGlassShader(color, eta, absorptionDistance, absorptionColor);
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Mirror Shader
+	 */
+	public void setMirrorShader() {
+		// take processings current color
+		shader.setMirrorShader(new Color(calcR, calcG, calcB));
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets Mirror Shader
+	 * @param color Color
+	 */
+	public void setMirrorShader(Color color) {
+		shader.setMirrorShader(color);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Phong Shader
+	 * @param diffuse Diffuse Color
+	 * @param specular Specular Color
+	 * @param power ?
+	 * @param samples Detail, the higher the slower and smoother
+	 */
+	public void setPhongShader(Color diffuse, Color specular, float power, int samples) {
+		shader.setPhongShader(diffuse, specular, power, samples);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Phong Shader
+	 * @param diffuse Diffuse Color
+	 * @param specular Specular Color
+	 * @param power ?
+	 * @param samples Detail, the higher the slower and smoother
+	 * @param texture Path to texture file
+	 */
+	public void setPhongShader(Color diffuse, Color specular, float power, int samples, String texture) {
+		shader.setPhongShader(diffuse, specular, power, samples, texture);
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets Shiny Diffuse Shader
+	 * @param shiny shinyness, the bigger the more
+	 */
+	public void setShinyDiffuseShader(float shiny) {
+		// take processings current color
+		shader.setShinyDiffuseShader(new Color(calcR, calcG, calcB), shiny);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/**
+	 * Sets Shiny Diffuse Shader
+	 * @param color Color
+	 * @param shiny shinyness, the bigger the more
+	 */
+	public void setShinyDiffuseShader(Color color, float shiny) {
+		shader.setShinyDiffuseShader(color, shiny);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	/**
+	 * Sets Shiny Diffuse Shader
+	 * @param color Color
+	 * @param shiny shinyness, the bigger the more
+	 * @param texture Path to texture file
+	 */
+	public void setShinyDiffuseShader(Color color, float shiny, String texture) {
+		shader.setShinyDiffuseShader(color, shiny, texture);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Uber Shader
+	 * @param diffuse Diffuse Color
+	 * @param specular Specular Color
+	 * @param diffuseTexture Diffuse Texture
+	 * @param specularTexture Specular Texture
+	 * @param diffuseBlend Diffuse Blendamount
+	 * @param specularBlend Specular Blendamount
+	 * @param glossyness glossyness
+	 * @param samples samples
+	 */
+	public void setUberShader(Color diffuse, Color specular, String diffuseTexture, String specularTexture, float diffuseBlend, float specularBlend, float glossyness, int samples) {
+		shader.setUberShader(diffuse, specular, diffuseTexture, specularTexture, diffuseBlend, specularBlend, glossyness, samples);
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Anisotropic Ward Shader
+	 * @param diffuse Diffuse Color
+	 * @param specular Specular Color
+	 * @param roughnessX Roughness in x axis
+	 * @param roughnessY Roughness in y axis
+	 * @param samples Detail, the more the slower and smoother
+	 */
+	public void setWardShader(Color diffuse, Color specular, float roughnessX, float roughnessY, int samples) {
+		shader.setWardShader(diffuse, specular, roughnessX, roughnessY, samples);
+		//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Anisotropic Ward Shader
+	 * @param diffuse Diffuse Color
+	 * @param specular Specular Color
+	 * @param roughnessX Roughness in x axis
+	 * @param roughnessY Roughness in y axis
+	 * @param samples Detail, the more the slower and smoother
+	 * @param texture Path to texture file
+	 */
+	public void setWardShader(Color diffuse, Color specular, float roughnessX, float roughnessY, int samples, String texture) {
+		shader.setWardShader(diffuse, specular, roughnessX, roughnessY, samples, texture);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+
+	/**
+	 * Sets Wireframe Shader
+	 * @param lineColor line color
+	 * @param fillColor fill color
+	 * @param width stroke width ?
+	 */
+	public void setWireframeShader(Color lineColor, Color fillColor, float width) {
+		shader.setWireframeShader(lineColor, fillColor, width);
+//		save name for use with primitives
+		currShader = shader.currentName;
+	}
+	
+	/*
+	 * END OF SHADER PROCESSING VERSION
+	 * --------------------------------------------------------------------------------------
+	 */
+	
+	/*
+	 * --------------------------------------------------------------------------------------
 	 * SHADER
 	 */
 
@@ -402,18 +665,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param samples Detail, the higher the slower and smoother
 	 * @param maxDist ?
 	 */
+	@Deprecated
 	public void setAmbientOcclusionShader(String name, Color bright, Color dark, int samples, float maxDist) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255, bright.getGreen()/(float)255, bright.getBlue()/(float)255);
-		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255, dark.getGreen()/(float)255, dark.getBlue()/(float)255);
-		sunflow.parameter("samples", samples);
-		sunflow.parameter("maxdist", maxDist);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_AMBIENT_OCCLUSION);
+		this.setAmbientOcclusionShader(bright, dark, samples, maxDist);
 	}
 
 	/**
@@ -425,19 +679,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param maxDist ?
 	 * @param texture Path to texture file
 	 */
+	@Deprecated
 	public void setAmbientOcclusionShader(String name, Color bright, Color dark, int samples, float maxDist, String texture) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("bright", colorSpace, bright.getRed()/(float)255, bright.getGreen()/(float)255, bright.getBlue()/(float)255);
-		sunflow.parameter("dark", colorSpace, dark.getRed()/(float)255, dark.getGreen()/(float)255, dark.getBlue()/(float)255);
-		sunflow.parameter("samples", samples);
-		sunflow.parameter("maxdist", maxDist);
-		sunflow.parameter("texture", texture);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_TEXTURED_AMBIENT_OCCLUSION);
+		this.setAmbientOcclusionShader(bright, dark, samples, maxDist, texture);
 	}
 
 	/**
@@ -445,15 +689,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param name Individual Name
 	 * @param color Color
 	 */
+	@Deprecated
 	public void setConstantShader(String name, Color color) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_CONSTANT);
+		this.setConstantShader(color);
 	}
 
 	/**
@@ -461,15 +699,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param name Individial Name
 	 * @param color Color
 	 */
+	@Deprecated
 	public void setDiffuseShader(String name, Color color) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_DIFFUSE);
+		this.setDiffuseShader(color);
 	}
 
 	/**
@@ -478,16 +710,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param color Color
 	 * @param texture Path to texture file
 	 */
+	@Deprecated
 	public void setDiffuseShader(String name, Color color, String texture) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-		sunflow.parameter("texture", texture);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_TEXTURED_DIFFUSE);
+		this.setDiffuseShader(color, texture);
 	}
 
 	/**
@@ -498,18 +723,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param absorptionDistance ?
 	 * @param absorptionColor Color
 	 */
+	@Deprecated
 	public void setGlassShader(String name, Color color, float eta, float absorptionDistance, Color absorptionColor) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-		sunflow.parameter("eta", eta);
-		sunflow.parameter("absorption.distance", absorptionDistance);
-		sunflow.parameter("absorption.color", colorSpace, absorptionColor.getRed()/(float)255, absorptionColor.getGreen()/(float)255, absorptionColor.getBlue()/(float)255);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_GLASS);
+		this.setGlassShader(name, color, eta, absorptionDistance, absorptionColor);
 	}
 
 	/**
@@ -517,15 +733,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param name Individial Name
 	 * @param color Color
 	 */
+	@Deprecated
 	public void setMirrorShader(String name, Color color) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("color", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_MIRROR);
+		this.setMirrorShader(color);
 	}
 
 	/**
@@ -536,18 +746,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param power ?
 	 * @param samples Detail, the higher the slower and smoother
 	 */
+	@Deprecated
 	public void setPhongShader(String name, Color diffuse, Color specular, float power, int samples) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
-		sunflow.parameter("power", power);
-		sunflow.parameter("samples", samples);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_PHONG);
+		this.setPhongShader(diffuse, specular, power, samples);
 	}
 
 	/**
@@ -559,19 +760,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param samples Detail, the higher the slower and smoother
 	 * @param texture Path to texture file
 	 */
+	@Deprecated
 	public void setPhongShader(String name, Color diffuse, Color specular, float power, int samples, String texture) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
-		sunflow.parameter("power", power);
-		sunflow.parameter("samples", samples);
-		sunflow.parameter("texture", texture);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_TEXTURED_PHONG);
+		this.setPhongShader(diffuse, specular, power, samples, texture);
 	}
 	/**
 	 * Sets Shiny Diffuse Shader
@@ -579,16 +770,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param color Color
 	 * @param shiny shinyness, the bigger the more
 	 */
+	@Deprecated
 	public void setShinyDiffuseShader(String name, Color color, float shiny) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-		sunflow.parameter("shiny", shiny);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_SHINY_DIFFUSE);
+		this.setShinyDiffuseShader(color, shiny);
 	}
 	/**
 	 * Sets Shiny Diffuse Shader
@@ -597,17 +781,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param shiny shinyness, the bigger the more
 	 * @param texture Path to texture file
 	 */
+	@Deprecated
 	public void setShinyDiffuseShader(String name, Color color, float shiny, String texture) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, color.getRed()/(float)255, color.getGreen()/(float)255, color.getBlue()/(float)255);
-		sunflow.parameter("shiny", shiny);
-		sunflow.parameter("texture", texture);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_TEXTURED_SHINY_DIFFUSE);
+		this.setShinyDiffuseShader(color, shiny, texture);
 	}
 
 	/**
@@ -622,22 +798,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param glossyness glossyness
 	 * @param samples samples
 	 */
+	@Deprecated
 	public void setUberShader(String name, Color diffuse, Color specular, String diffuseTexture, String specularTexture, float diffuseBlend, float specularBlend, float glossyness, int samples) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
-		sunflow.parameter("diffuse.texture", diffuseTexture);
-		sunflow.parameter("specular.texture", specularTexture);
-		sunflow.parameter("diffuse.blend", diffuseBlend);
-		sunflow.parameter("specular.blend", specularBlend);
-		sunflow.parameter("glossyness", glossyness);
-		sunflow.parameter("samples", samples);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_UBER);
+		this.setUberShader(diffuse, specular, diffuseTexture, specularTexture, diffuseBlend, specularBlend, glossyness, samples);
 	}
 
 	/**
@@ -649,19 +812,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param roughnessY Roughness in y axis
 	 * @param samples Detail, the more the slower and smoother
 	 */
+	@Deprecated
 	public void setWardShader(String name, Color diffuse, Color specular, float roughnessX, float roughnessY, int samples) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
-		sunflow.parameter("roughnessX", roughnessX);
-		sunflow.parameter("roughnessY", roughnessY);
-		sunflow.parameter("samples", samples);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_WARD);
+		this.setWardShader(diffuse, specular, roughnessX, roughnessY, samples);
 	}
 
 	/**
@@ -674,20 +827,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param samples Detail, the more the slower and smoother
 	 * @param texture Path to texture file
 	 */
+	@Deprecated
 	public void setWardShader(String name, Color diffuse, Color specular, float roughnessX, float roughnessY, int samples, String texture) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("diffuse", colorSpace, diffuse.getRed()/(float)255, diffuse.getGreen()/(float)255, diffuse.getBlue()/(float)255);
-		sunflow.parameter("specular", colorSpace, specular.getRed()/(float)255, specular.getGreen()/(float)255, specular.getBlue()/(float)255);
-		sunflow.parameter("roughnessX", roughnessX);
-		sunflow.parameter("roughnessY", roughnessY);
-		sunflow.parameter("samples", samples);
-		sunflow.parameter("texture", texture);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_TEXTURED_WARD);
+		this.setWardShader(diffuse, specular, roughnessX, roughnessY, samples, texture);
 	}
 
 	/**
@@ -697,17 +839,9 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	 * @param fillColor fill color
 	 * @param width stroke width ?
 	 */
+	@Deprecated
 	public void setWireframeShader(String name, Color lineColor, Color fillColor, float width) {
-//		save name for use with primitives
-		currShader = name;
-
-//		set parameter
-		sunflow.parameter("line", colorSpace, lineColor.getRed()/(float)255, lineColor.getGreen()/(float)255, lineColor.getBlue()/(float)255);
-		sunflow.parameter("fill", colorSpace, fillColor.getRed()/(float)255, fillColor.getGreen()/(float)255, fillColor.getBlue()/(float)255);
-		sunflow.parameter("width", width);
-
-//		set shader
-		sunflow.shader(currShader, SHADER_WIREFRAME);
+		this.setWireframeShader(lineColor, fillColor, width);
 	}
 
 	/*
@@ -752,7 +886,6 @@ public class P5SunflowAPIAPI extends PGraphics3D {
 	public void drawMesh(String name, float[] vertices, int[] triangles) {
 		sunflow.parameter("points", "point", "vertex", vertices); 
 		sunflow.parameter("triangles", triangles);
-
 		sunflow.geometry( name, "triangle_mesh" );
 		sunflow.parameter( "shaders", currShader);
 		if(isModifiers) sunflow.parameter("modifiers", currModifier);
