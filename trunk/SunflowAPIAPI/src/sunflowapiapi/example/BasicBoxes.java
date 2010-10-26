@@ -1,10 +1,5 @@
 package sunflowapiapi.example;
 
-import java.awt.Color;
-
-import org.sunflow.math.Point3;
-import org.sunflow.math.Vector3;
-
 import processing.core.PApplet;
 import sunflowapiapi.P5SunflowAPIAPI;
 
@@ -13,6 +8,7 @@ public class BasicBoxes extends PApplet{
 	private P5SunflowAPIAPI sunflow ;
 	int sceneWidth = 640;
 	int sceneHeight = 480;
+	
 	public void setup() {
 		size(sceneWidth, sceneHeight, "sunflowapiapi.P5SunflowAPIAPI");
 
