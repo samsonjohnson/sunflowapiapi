@@ -628,6 +628,37 @@ public class SunflowAPIAPI {
 		if(isModifiers) sunflow.parameter("modifiers", currModifier);
 		sunflow.instance( name + ".instance", name );
 	}
+
+	/**
+	 * draws a mesh primitive which can be rotated and scaled
+	 * @param name individual name of primitive
+	 * @param vertices Float array with coordinates (like [x0,y0,z0,x1,y1,z1,x2,y2,z2])
+	 * @param triangles int array connecting the vertices (like [0,1,2])
+	 * @param size size
+	 * @param xRotation x rotation
+	 * @param yRotation y rotation
+	 * @param zRotation z rotation
+	 */
+	public void drawMesh(String name, float[] vertices, int[] triangles, float size, float xRotation, float yRotation, float zRotation) {
+		Matrix4 scale = Matrix4.IDENTITY.multiply( Matrix4.scale(size, size, size) );
+		Matrix4 rotate = Matrix4.IDENTITY 
+		.multiply( Matrix4.rotateZ(zRotation) ) 
+		.multiply( Matrix4.rotateX(xRotation) ) 
+		.multiply( Matrix4.rotateY(yRotation) );
+
+		Matrix4 m = Matrix4.IDENTITY;
+		m = scale.multiply(m);
+		m = rotate.multiply(m); 
+
+		sunflow.parameter("points", "point", "vertex", vertices); 
+		sunflow.parameter("triangles", triangles);
+
+		sunflow.geometry( name, "triangle_mesh" );
+		sunflow.parameter( "shaders", currShader);
+		if(isModifiers) sunflow.parameter("modifiers", currModifier);
+		sunflow.parameter( "transform", m ); 
+		sunflow.instance( name + ".instance", name );
+	}
 	
 	/**
 	 * draws a bezier patch
